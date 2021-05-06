@@ -1,0 +1,7 @@
+{
+  "name":"David",
+  "age":35,
+  "hobbies":["Footballs","Cooking","Swimming"],
+  "languages":{"French":"Beginner","German":"Intermediate","Spanish":"Advanced"}
+}
+
