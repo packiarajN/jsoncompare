@@ -1,755 +1,259 @@
-package com.paypal.json;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
+package com.paypal.json.comparator;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
+import javax.net.ssl.HttpsURLConnection;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.paypal.json.comparator.CustomComparator;
-import com.paypal.json.comparator.JSONComparator;
+/**
+ * Utility class that contains Json manipulation methods.
+ */
+public final class JSONCompareUtil {
+    private static Integer INTEGER_ONE = new Integer(1);
 
-
-public class JSONAssert {
-    private JSONAssert() {}
+    private JSONCompareUtil() {
+    }
 
     /**
-     * Asserts that the JSONObject provided matches the expected string.  If it isn't it throws an
-     * {@link AssertionError}.
+     * Converts the provided {@link JSONArray} to a Map of {@link JSONObject}s where the key of each object
+     * is the value at {@code uniqueKey} in each object.
      *
-     * @param expectedStr Expected JSON string
-     * @param actual JSONObject to compare
-     * @param strict Enables strict checking
+     * @param array     the JSON array to convert
+     * @param uniqueKey the key to map the JSON objects to
+     * @return the map of {@link JSONObject}s from {@code array}
      * @throws JSONException JSON parsing error
      */
-    public static void assertEquals(String expectedStr, JSONObject actual, boolean strict)
-            throws JSONException {
-        assertEquals(expectedStr, actual, strict ? JSONCompareMode.STRICT : JSONCompareMode.LENIENT);
-    }
-    
-    /**
-     * Asserts that the JSONObject provided matches the expected string.  If it isn't it throws an
-     * {@link AssertionError}.
-     *
-     * @param message Error message to be displayed in case of assertion failure
-     * @param expectedStr Expected JSON string
-     * @param actual JSONObject to compare
-     * @param strict Enables strict checking
-     * @throws JSONException JSON parsing error
-     */
-    public static void assertEquals(String message, String expectedStr, JSONObject actual, boolean strict)
-        throws JSONException {
-        assertEquals(message, expectedStr, actual, strict ? JSONCompareMode.STRICT : JSONCompareMode.LENIENT);
-    }
-
-    /**
-     * Asserts that the JSONObject provided does not match the expected string.  If it is it throws an
-     * {@link AssertionError}.
-     * 
-     * @see #assertEquals(String, JSONObject, boolean)
-     * 
-     * @param expectedStr Expected JSON string
-     * @param actual JSONObject to compare
-     * @param strict Enables strict checking
-     * @throws JSONException JSON parsing error
-     */
-    public static void assertNotEquals(String expectedStr, JSONObject actual, boolean strict)
-            throws JSONException {
-        assertNotEquals(expectedStr, actual, strict ? JSONCompareMode.STRICT : JSONCompareMode.LENIENT);
-    }
-    
-    /**
-     * Asserts that the JSONObject provided does not match the expected string.  If it is it throws an
-     * {@link AssertionError}.
-     * 
-     * @see #assertEquals(String, JSONObject, boolean)
-     * 
-     * @param message Error message to be displayed in case of assertion failure
-     * @param expectedStr Expected JSON string
-     * @param actual JSONObject to compare
-     * @param strict Enables strict checking
-     * @throws JSONException JSON parsing error
-     */
-    public static void assertNotEquals(String message, String expectedStr, JSONObject actual, boolean strict)
-        throws JSONException {
-        assertNotEquals(message, expectedStr, actual, strict ? JSONCompareMode.STRICT : JSONCompareMode.LENIENT);
-    }
-
-    /**
-     * Asserts that the JSONObject provided matches the expected string.  If it isn't it throws an
-     * {@link AssertionError}.
-     *
-     * @param expectedStr Expected JSON string
-     * @param actual JSONObject to compare
-     * @param compareMode Specifies which comparison mode to use
-     * @throws JSONException JSON parsing error
-     */
-    public static void assertEquals(String expectedStr, JSONObject actual, JSONCompareMode compareMode)
-            throws JSONException {
-        assertEquals("", expectedStr, actual, compareMode);
-    }
-    
-    /**
-     * Asserts that the JSONObject provided matches the expected string.  If it isn't it throws an
-     * {@link AssertionError}.
-     *
-     * @param message Error message to be displayed in case of assertion failure
-     * @param expectedStr Expected JSON string
-     * @param actual JSONObject to compare
-     * @param compareMode Specifies which comparison mode to use
-     * @throws JSONException JSON parsing error
-     */
-    public static void assertEquals(String message, String expectedStr, JSONObject actual, JSONCompareMode compareMode)
-        throws JSONException {
-        Object expected = JSONParser.parseJSON(expectedStr);
-        if (expected instanceof JSONObject) {
-            assertEquals(message, (JSONObject)expected, actual, compareMode);
+    public static Map<Object, JSONObject> arrayOfJsonObjectToMap(JSONArray array, String uniqueKey) throws JSONException {
+        Map<Object, JSONObject> valueMap = new HashMap<Object, JSONObject>();
+        for (int i = 0; i < array.length(); ++i) {
+            JSONObject jsonObject = (JSONObject) array.get(i);
+            Object id = jsonObject.get(uniqueKey);
+            valueMap.put(id, jsonObject);
         }
-        else {
-            throw new AssertionError("Expecting a JSON array, but passing in a JSON object");
-        }
+        return valueMap;
     }
 
     /**
-     * Asserts that the JSONObject provided does not match the expected string.  If it is it throws an
-     * {@link AssertionError}.
-     * 
-     * @see #assertEquals(String, JSONObject, JSONCompareMode)
-     * 
-     * @param expectedStr Expected JSON string
-     * @param actual JSONObject to compare
-     * @param compareMode Specifies which comparison mode to use
-     * @throws JSONException JSON parsing error
-     */
-    public static void assertNotEquals(String expectedStr, JSONObject actual, JSONCompareMode compareMode)
-            throws JSONException {
-        assertNotEquals("", expectedStr, actual, compareMode);
-    }
-    
-    /**
-     * Asserts that the JSONObject provided does not match the expected string.  If it is it throws an
-     * {@link AssertionError}.
-     * 
-     * @see #assertEquals(String, JSONObject, JSONCompareMode)
-     * 
-     * @param message Error message to be displayed in case of assertion failure
-     * @param expectedStr Expected JSON string
-     * @param actual JSONObject to compare
-     * @param compareMode Specifies which comparison mode to use
-     * @throws JSONException JSON parsing error
-     */
-    public static void assertNotEquals(String message, String expectedStr, JSONObject actual, JSONCompareMode compareMode)
-        throws JSONException {
-        Object expected = JSONParser.parseJSON(expectedStr);
-        if (expected instanceof JSONObject) {
-            assertNotEquals(message, (JSONObject) expected, actual, compareMode);
-        }
-        else {
-            throw new AssertionError("Expecting a JSON array, but passing in a JSON object");
-        }
-    }
-
-    /**
-     * Asserts that the JSONArray provided matches the expected string.  If it isn't it throws an
-     * {@link AssertionError}.
+     * Searches for the unique key of the {@code expected} JSON array.
      *
-     * @param expectedStr Expected JSON string
-     * @param actual JSONArray to compare
-     * @param strict Enables strict checking
+     * @param expected the array to find the unique key of
+     * @return the unique key if there's any, otherwise null
      * @throws JSONException JSON parsing error
      */
-    public static void assertEquals(String expectedStr, JSONArray actual, boolean strict)
-            throws JSONException {
-        assertEquals(expectedStr, actual, strict ? JSONCompareMode.STRICT : JSONCompareMode.LENIENT);
-    }
-    
-    /**
-     * Asserts that the JSONArray provided matches the expected string.  If it isn't it throws an
-     * {@link AssertionError}.
-     *
-     * @param message Error message to be displayed in case of assertion failure
-     * @param expectedStr Expected JSON string
-     * @param actual JSONArray to compare
-     * @param strict Enables strict checking
-     * @throws JSONException JSON parsing error
-     */
-    public static void assertEquals(String message, String expectedStr, JSONArray actual, boolean strict)
-        throws JSONException {
-        assertEquals(message, expectedStr, actual, strict ? JSONCompareMode.STRICT : JSONCompareMode.LENIENT);
-    }
-
-    /**
-     * Asserts that the JSONArray provided does not match the expected string.  If it is it throws an
-     * {@link AssertionError}.
-     * 
-     * @param expectedStr Expected JSON string
-     * @param actual JSONArray to compare
-     * @param strict Enables strict checking
-     * @throws JSONException JSON parsing error
-     */
-    public static void assertNotEquals(String expectedStr, JSONArray actual, boolean strict)
-            throws JSONException {
-        assertNotEquals(expectedStr, actual, strict ? JSONCompareMode.STRICT : JSONCompareMode.LENIENT);
-    }
-    
-    /**
-     * Asserts that the JSONArray provided does not match the expected string.  If it is it throws an
-     * {@link AssertionError}.
-     * 
-     * @param message Error message to be displayed in case of assertion failure
-     * @param expectedStr Expected JSON string
-     * @param actual JSONArray to compare
-     * @param strict Enables strict checking
-     * @throws JSONException JSON parsing error
-     */
-    public static void assertNotEquals(String message, String expectedStr, JSONArray actual, boolean strict)
-        throws JSONException {
-        assertNotEquals(message, expectedStr, actual, strict ? JSONCompareMode.STRICT : JSONCompareMode.LENIENT);
-    }
-
-    /**
-     * Asserts that the JSONArray provided matches the expected string.  If it isn't it throws an
-     * {@link AssertionError}.
-     *
-     * @param expectedStr Expected JSON string
-     * @param actual JSONArray to compare
-     * @param compareMode Specifies which comparison mode to use
-     * @throws JSONException JSON parsing error
-     */
-    public static void assertEquals(String expectedStr, JSONArray actual, JSONCompareMode compareMode)
-            throws JSONException {
-        assertEquals("", expectedStr, actual, compareMode);
-    }
-    
-    /**
-     * Asserts that the JSONArray provided matches the expected string.  If it isn't it throws an
-     * {@link AssertionError}.
-     *
-     * @param message Error message to be displayed in case of assertion failure
-     * @param expectedStr Expected JSON string
-     * @param actual JSONArray to compare
-     * @param compareMode Specifies which comparison mode to use
-     * @throws JSONException JSON parsing error
-     */
-    public static void assertEquals(String message, String expectedStr, JSONArray actual, JSONCompareMode compareMode)
-        throws JSONException {
-        Object expected = JSONParser.parseJSON(expectedStr);
-        if (expected instanceof JSONArray) {
-            assertEquals(message, (JSONArray) expected, actual, compareMode);
+    public static String findUniqueKey(JSONArray expected) throws JSONException {
+        // Find a unique key for the object (id, name, whatever)
+        JSONObject o = (JSONObject) expected.get(0); // There's at least one at this point
+        for (String candidate : getKeys(o)) {
+            if (isUsableAsUniqueKey(candidate, expected)) return candidate;
         }
-        else {
-            throw new AssertionError("Expecting a JSON object, but passing in a JSON array");
-        }
+        // No usable unique key :-(
+        return null;
     }
 
     /**
-     * Asserts that the JSONArray provided does not match the expected string.  If it is it throws an
-     * {@link AssertionError}.
-     * 
-     * @param expectedStr Expected JSON string
-     * @param actual JSONArray to compare
-     * @param compareMode Specifies which comparison mode to use
-     * @throws JSONException JSON parsing error
-     */
-    public static void assertNotEquals(String expectedStr, JSONArray actual, JSONCompareMode compareMode)
-            throws JSONException {
-        Object expected = JSONParser.parseJSON(expectedStr);
-        if (expected instanceof JSONArray) {
-            assertNotEquals((JSONArray) expected, actual, compareMode);
-        }
-        else {
-            throw new AssertionError("Expecting a JSON object, but passing in a JSON array");
-        }
-    }
-    
-    /**
-     * Asserts that the JSONArray provided does not match the expected string.  If it is it throws an
-     * {@link AssertionError}.
-     * 
-     * @param message Error message to be displayed in case of assertion failure
-     * @param expectedStr Expected JSON string
-     * @param actual JSONArray to compare
-     * @param compareMode Specifies which comparison mode to use
-     * @throws JSONException JSON parsing error
-     */
-    public static void assertNotEquals(String message, String expectedStr, JSONArray actual, JSONCompareMode compareMode)
-        throws JSONException {
-        Object expected = JSONParser.parseJSON(expectedStr);
-        if (expected instanceof JSONArray) {
-            assertNotEquals(message, (JSONArray) expected, actual, compareMode);
-        }
-        else {
-            throw new AssertionError("Expecting a JSON object, but passing in a JSON array");
-        }
-    }
-
-    /**
-     * Asserts that the JSONArray provided matches the expected string.  If it isn't it throws an
-     * {@link AssertionError}.
+     * <p>Looks to see if candidate field is a possible unique key across a array of objects.
+     * Returns true IFF:</p>
+     * <ol>
+     *   <li>array is an array of JSONObject
+     *   <li>candidate is a top-level field in each of of the objects in the array
+     *   <li>candidate is a simple value (not JSONObject or JSONArray)
+     *   <li>candidate is unique across all elements in the array
+     * </ol>
      *
-     * @param expectedStr Expected JSON string
-     * @param actualStr String to compare
-     * @param strict Enables strict checking
+     * @param candidate is usable as a unique key if every element in the
+     * @param array is a JSONObject having that key, and no two values are the same.
+     * @return true if the candidate can work as a unique id across array
      * @throws JSONException JSON parsing error
      */
-    public static void assertEquals(String expectedStr, String actualStr, boolean strict)
-            throws JSONException {
-        assertEquals(expectedStr, actualStr, strict ? JSONCompareMode.STRICT : JSONCompareMode.LENIENT);
-    }
-    
-    /**
-     * Asserts that the JSONArray provided matches the expected string.  If it isn't it throws an
-     * {@link AssertionError}.
-     *
-     * @param message Error message to be displayed in case of assertion failure
-     * @param expectedStr Expected JSON string
-     * @param actualStr String to compare
-     * @param strict Enables strict checking
-     * @throws JSONException JSON parsing error
-     */
-    public static void assertEquals(String message, String expectedStr, String actualStr, boolean strict)
-        throws JSONException {
-        assertEquals(message, expectedStr, actualStr, strict ? JSONCompareMode.STRICT : JSONCompareMode.LENIENT);
-    }
-
-    /**
-     * Asserts that the JSONArray provided does not match the expected string.  If it is it throws an
-     * {@link AssertionError}.
-     * 
-     * @param expectedStr Expected JSON string
-     * @param actualStr String to compare
-     * @param strict Enables strict checking
-     * @throws JSONException JSON parsing error
-     */
-    public static void assertNotEquals(String expectedStr, String actualStr, boolean strict)
-            throws JSONException {
-        assertNotEquals(expectedStr, actualStr, strict ? JSONCompareMode.STRICT : JSONCompareMode.LENIENT);
-    }
-    
-    /**
-     * Asserts that the JSONArray provided does not match the expected string.  If it is it throws an
-     * {@link AssertionError}.
-     * 
-     * @param message Error message to be displayed in case of assertion failure
-     * @param expectedStr Expected JSON string
-     * @param actualStr String to compare
-     * @param strict Enables strict checking
-     * @throws JSONException JSON parsing error
-     */
-    public static void assertNotEquals(String message, String expectedStr, String actualStr, boolean strict)
-        throws JSONException {
-        assertNotEquals(message, expectedStr, actualStr, strict ? JSONCompareMode.STRICT : JSONCompareMode.LENIENT);
-    }
-
-    /**
-     * Asserts that the JSONArray provided matches the expected string.  If it isn't it throws an
-     * {@link AssertionError}.
-     *
-     * @param expectedStr Expected JSON string
-     * @param actualStr String to compare
-     * @param compareMode Specifies which comparison mode to use
-     * @throws JSONException JSON parsing error
-     */
-    public static void assertEquals(String expectedStr, String actualStr, JSONCompareMode compareMode)
-            throws JSONException {
-        assertEquals("", expectedStr, actualStr, compareMode);
-    }
-    
-    /**
-     * Asserts that the JSONArray provided matches the expected string.  If it isn't it throws an
-     * {@link AssertionError}.
-     *
-     * @param message Error message to be displayed in case of assertion failure
-     * @param expectedStr Expected JSON string
-     * @param actualStr String to compare
-     * @param compareMode Specifies which comparison mode to use
-     * @throws JSONException JSON parsing error
-     */
-    public static void assertEquals(String message, String expectedStr, String actualStr, JSONCompareMode compareMode)
-        throws JSONException {
-        if (expectedStr==actualStr) return;
-        if (expectedStr==null){
-            throw new AssertionError("Expected string is null.");
-        }else if (actualStr==null){
-            throw new AssertionError("Actual string is null.");
+    public static boolean isUsableAsUniqueKey(String candidate, JSONArray array) throws JSONException {
+        Set<Object> seenValues = new HashSet<Object>();
+        for (int i = 0; i < array.length(); i++) {
+            Object item = array.get(i);
+            if (item instanceof JSONObject) {
+                JSONObject o = (JSONObject) item;
+                if (o.has(candidate)) {
+                    Object value = o.get(candidate);
+                    if (isSimpleValue(value) && !seenValues.contains(value)) {
+                        seenValues.add(value);
+                    } else {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
         }
-        JSONCompareResult result = JSONCompare.compareJSON(expectedStr, actualStr, compareMode);
-        if (result.failed()) {
-            throw new AssertionError(getCombinedMessage(message, result.getMessage()));
+        return true;
+    }
+
+    /**
+     * Converts the given {@link JSONArray} to a list of {@link Object}s.
+     *
+     * @param expected the JSON array to convert
+     * @return the list of objects from the {@code expected} array
+     * @throws JSONException JSON parsing error
+     */
+    public static List<Object> jsonArrayToList(JSONArray expected) throws JSONException {
+        List<Object> jsonObjects = new ArrayList<Object>(expected.length());
+        for (int i = 0; i < expected.length(); ++i) {
+            jsonObjects.add(expected.get(i));
         }
+        return jsonObjects;
     }
 
     /**
-     * Asserts that the JSONArray provided does not match the expected string.  If it is it throws an
-     * {@link AssertionError}.
-     * 
-     * @param expectedStr Expected JSON string
-     * @param actualStr String to compare
-     * @param compareMode Specifies which comparison mode to use
+     * Returns whether all of the elements in the given array are simple values.
+     *
+     * @param array the JSON array to iterate through on
+     * @return true if all the elements in {@code array} are simple values
      * @throws JSONException JSON parsing error
+     * @see #isSimpleValue(Object)
      */
-    public static void assertNotEquals(String expectedStr, String actualStr, JSONCompareMode compareMode)
-            throws JSONException {
-        assertNotEquals("", expectedStr, actualStr, compareMode);
-    }
-    
-    /**
-     * Asserts that the JSONArray provided does not match the expected string.  If it is it throws an
-     * {@link AssertionError}.
-     * 
-     * @param message Error message to be displayed in case of assertion failure
-     * @param expectedStr Expected JSON string
-     * @param actualStr String to compare
-     * @param compareMode Specifies which comparison mode to use
-     * @throws JSONException JSON parsing error
-     */
-    public static void assertNotEquals(String message, String expectedStr, String actualStr, JSONCompareMode compareMode)
-        throws JSONException {
-        JSONCompareResult result = JSONCompare.compareJSON(expectedStr, actualStr, compareMode);
-        if (result.passed()) {
-            throw new AssertionError(getCombinedMessage(message, result.getMessage()));
+    public static boolean allSimpleValues(JSONArray array) throws JSONException {
+        for (int i = 0; i < array.length(); ++i) {
+            if (!isSimpleValue(array.get(i))) {
+                return false;
+            }
         }
+        return true;
     }
 
     /**
-     * Asserts that the json string provided matches the expected string.  If it isn't it throws an
-     * {@link AssertionError}.
+     * Returns whether the given object is a simple value: not {@link JSONObject} and not {@link JSONArray}.
      *
-     * @param expectedStr Expected JSON string
-     * @param actualStr String to compare
-     * @param comparator Comparator
-     * @throws JSONException JSON parsing error
+     * @param o the object to inspect
+     * @return true if {@code o} is a simple value
      */
-    public static void assertEquals(String expectedStr, String actualStr, JSONComparator comparator)
-            throws JSONException {
-        assertEquals("", expectedStr, actualStr, comparator);
-        
+    public static boolean isSimpleValue(Object o) {
+        return !(o instanceof JSONObject) && !(o instanceof JSONArray);
     }
-    
+
     /**
-     * Asserts that the json string provided matches the expected string.  If it isn't it throws an
-     * {@link AssertionError}.
+     * Returns whether all elements in {@code array} are {@link JSONObject} instances.
      *
-     * @param message Error message to be displayed in case of assertion failure
-     * @param expectedStr Expected JSON string
-     * @param actualStr String to compare
-     * @param comparator Comparator
+     * @param array the array to inspect
+     * @return true if all the elements in the given array are JSONObjects
      * @throws JSONException JSON parsing error
      */
-    public static void assertEquals(String message, String expectedStr, String actualStr, JSONComparator comparator)
-        throws JSONException {
-        JSONCompareResult result = JSONCompare.compareJSON(expectedStr, actualStr, comparator);
-        if (result.failed()) {
-            throw new AssertionError(getCombinedMessage(message, result.getMessage()));
+    public static boolean allJSONObjects(JSONArray array) throws JSONException {
+        for (int i = 0; i < array.length(); ++i) {
+            if (!(array.get(i) instanceof JSONObject)) {
+                return false;
+            }
         }
+        return true;
     }
 
     /**
-     * Asserts that the json string provided does not match the expected string.  If it is it throws an
-     * {@link AssertionError}.
-     * 
-     * @param expectedStr Expected JSON string
-     * @param actualStr String to compare
-     * @param comparator Comparator
+     * Returns whether all elements in {@code array} are {@link JSONArray} instances.
+     *
+     * @param array the array to inspect
+     * @return true if all the elements in the given array are JSONArrays
      * @throws JSONException JSON parsing error
      */
-    public static void assertNotEquals(String expectedStr, String actualStr, JSONComparator comparator)
-            throws JSONException {
-        assertNotEquals("", expectedStr, actualStr, comparator);
-    }
-    
-    /**
-     * Asserts that the json string provided does not match the expected string.  If it is it throws an
-     * {@link AssertionError}.
-     * 
-     * @param message Error message to be displayed in case of assertion failure
-     * @param expectedStr Expected JSON string
-     * @param actualStr String to compare
-     * @param comparator Comparator
-     * @throws JSONException JSON parsing error
-     */
-    public static void assertNotEquals(String message, String expectedStr, String actualStr, JSONComparator comparator)
-        throws JSONException {
-        JSONCompareResult result = JSONCompare.compareJSON(expectedStr, actualStr, comparator);
-        if (result.passed()) {
-            throw new AssertionError(getCombinedMessage(message, result.getMessage()));
+    public static boolean allJSONArrays(JSONArray array) throws JSONException {
+        for (int i = 0; i < array.length(); ++i) {
+            if (!(array.get(i) instanceof JSONArray)) {
+                return false;
+            }
         }
+        return true;
     }
 
     /**
-     * Asserts that the JSONObject provided matches the expected JSONObject.  If it isn't it throws an
-     * {@link AssertionError}.
+     * Collects all keys in {@code jsonObject}.
      *
-     * @param expected Expected JSONObject
-     * @param actual JSONObject to compare
-     * @param strict Enables strict checking
-     * @throws JSONException JSON parsing error
+     * @param jsonObject the {@link JSONObject} to get the keys of
+     * @return the set of keys
      */
-    public static void assertEquals(JSONObject expected, JSONObject actual, boolean strict)
-            throws JSONException {
-        assertEquals(expected, actual, strict ? JSONCompareMode.STRICT : JSONCompareMode.LENIENT);
-    }
-    
-    /**
-     * Asserts that the JSONObject provided matches the expected JSONObject.  If it isn't it throws an
-     * {@link AssertionError}.
-     *
-     * @param message Error message to be displayed in case of assertion failure
-     * @param expected Expected JSONObject
-     * @param actual JSONObject to compare
-     * @param strict Enables strict checking
-     * @throws JSONException JSON parsing error
-     */
-    public static void assertEquals(String message, JSONObject expected, JSONObject actual, boolean strict)
-        throws JSONException {
-        assertEquals(message, expected, actual, strict ? JSONCompareMode.STRICT : JSONCompareMode.LENIENT);
-    }
-
-    /**
-     * Asserts that the JSONObject provided does not match the expected JSONObject.  If it is it throws an
-     * {@link AssertionError}.
-     * 
-     * @param expected Expected JSONObject
-     * @param actual JSONObject to compare
-     * @param strict Enables strict checking
-     * @throws JSONException JSON parsing error
-     */
-    public static void assertNotEquals(JSONObject expected, JSONObject actual, boolean strict)
-            throws JSONException {
-        assertNotEquals(expected, actual, strict ? JSONCompareMode.STRICT : JSONCompareMode.LENIENT);
-    }
-    
-    /**
-     * Asserts that the JSONObject provided does not match the expected JSONObject.  If it is it throws an
-     * {@link AssertionError}.
-     * 
-     * @param message Error message to be displayed in case of assertion failure
-     * @param expected Expected JSONObject
-     * @param actual JSONObject to compare
-     * @param strict Enables strict checking
-     * @throws JSONException JSON parsing error
-     */
-    public static void assertNotEquals(String message, JSONObject expected, JSONObject actual, boolean strict)
-        throws JSONException {
-        assertNotEquals(message, expected, actual, strict ? JSONCompareMode.STRICT : JSONCompareMode.LENIENT);
-    }
-
-    /**
-     * Asserts that the JSONObject provided matches the expected JSONObject.  If it isn't it throws an
-     * {@link AssertionError}.
-     *
-     * @param expected Expected JSONObject
-     * @param actual JSONObject to compare
-     * @param compareMode Specifies which comparison mode to use
-     * @throws JSONException JSON parsing error
-     */
-    public static void assertEquals(JSONObject expected, JSONObject actual, JSONCompareMode compareMode)
-            throws JSONException {
-        assertEquals("", expected, actual, compareMode);
-    }
-    
-    /**
-     * Asserts that the JSONObject provided matches the expected JSONObject.  If it isn't it throws an
-     * {@link AssertionError}.
-     *
-     * @param message Error message to be displayed in case of assertion failure
-     * @param expected Expected JSONObject
-     * @param actual JSONObject to compare
-     * @param compareMode Specifies which comparison mode to use
-     * @throws JSONException JSON parsing error
-     */
-    public static void assertEquals(String message, JSONObject expected, JSONObject actual, JSONCompareMode compareMode)
-        throws JSONException {
-        JSONCompareResult result = JSONCompare.compareJSON(expected, actual, compareMode);
-        if (result.failed()) {
-            throw new AssertionError(getCombinedMessage(message, result.getMessage()));
+    public static Set<String> getKeys(JSONObject jsonObject) {
+        Set<String> keys = new TreeSet<String>();
+        Iterator<?> iter = jsonObject.keys();
+        while (iter.hasNext()) {
+            keys.add((String) iter.next());
         }
+        return keys;
+    }
+
+    public static String qualify(String prefix, String key) {
+        return "".equals(prefix) ? key : prefix + "." + key;
+    }
+
+    public static String formatUniqueKey(String key, String uniqueKey, Object value) {
+        return key + "[" + uniqueKey + "=" + value + "]";
     }
 
     /**
-     * Asserts that the JSONObject provided does not match the expected JSONObject.  If it is it throws an
-     * {@link AssertionError}.
-     * 
-     * @param expected Expected JSONObject
-     * @param actual JSONObject to compare
-     * @param compareMode Specifies which comparison mode to use
-     * @throws JSONException JSON parsing error
-     */
-    public static void assertNotEquals(JSONObject expected, JSONObject actual, JSONCompareMode compareMode)
-            throws JSONException {
-        assertNotEquals("", expected, actual, compareMode);
-    }
-    
-    /**
-     * Asserts that the JSONObject provided does not match the expected JSONObject.  If it is it throws an
-     * {@link AssertionError}.
-     * 
-     * @param message Error message to be displayed in case of assertion failure
-     * @param expected Expected JSONObject
-     * @param actual JSONObject to compare
-     * @param compareMode Specifies which comparison mode to use
-     * @throws JSONException JSON parsing error
-     */
-    public static void assertNotEquals(String message, JSONObject expected, JSONObject actual, JSONCompareMode compareMode)
-        throws JSONException {
-        JSONCompareResult result = JSONCompare.compareJSON(expected, actual, compareMode);
-        if (result.passed()) {
-            throw new AssertionError(getCombinedMessage(message, result.getMessage()));
-        }
-    }
-
-    /**
-     * Asserts that the JSONArray provided matches the expected JSONArray.  If it isn't it throws an
-     * {@link AssertionError}.
+     * Creates a cardinality map from {@code coll}.
      *
-     * @param expected Expected JSONArray
-     * @param actual JSONArray to compare
-     * @param strict Enables strict checking
-     * @throws JSONException JSON parsing error
+     * @param coll the collection of items to convert
+     * @param <T>  the type of elements in the input collection
+     * @return the cardinality map
      */
-    public static void assertEquals(JSONArray expected, JSONArray actual, boolean strict)
-            throws JSONException {
-        assertEquals("", expected, actual, strict ? JSONCompareMode.STRICT : JSONCompareMode.LENIENT);
-    }
-    
-    /**
-     * Asserts that the JSONArray provided matches the expected JSONArray.  If it isn't it throws an
-     * {@link AssertionError}.
-     *
-     * @param message Error message to be displayed in case of assertion failure
-     * @param expected Expected JSONArray
-     * @param actual JSONArray to compare
-     * @param strict Enables strict checking
-     * @throws JSONException JSON parsing error
-     */
-    public static void assertEquals(String message, JSONArray expected, JSONArray actual, boolean strict)
-        throws JSONException {
-        assertEquals(message, expected, actual, strict ? JSONCompareMode.STRICT : JSONCompareMode.LENIENT);
-    }
-
-    /**
-     * Asserts that the JSONArray provided does not match the expected JSONArray.  If it is it throws an
-     * {@link AssertionError}.
-     * 
-     * @param expected Expected JSONArray
-     * @param actual JSONArray to compare
-     * @param strict Enables strict checking
-     * @throws JSONException JSON parsing error
-     */
-    public static void assertNotEquals(JSONArray expected, JSONArray actual, boolean strict)
-            throws JSONException {
-        assertNotEquals(expected, actual, strict ? JSONCompareMode.STRICT : JSONCompareMode.LENIENT);
-    }
-    
-    /**
-     * Asserts that the JSONArray provided does not match the expected JSONArray.  If it is it throws an
-     * {@link AssertionError}.
-     * 
-     * @param message Error message to be displayed in case of assertion failure
-     * @param expected Expected JSONArray
-     * @param actual JSONArray to compare
-     * @param strict Enables strict checking
-     * @throws JSONException JSON parsing error
-     */
-    public static void assertNotEquals(String message, JSONArray expected, JSONArray actual, boolean strict)
-        throws JSONException {
-        assertNotEquals(message, expected, actual, strict ? JSONCompareMode.STRICT : JSONCompareMode.LENIENT);
-    }
-
-    /**
-     * Asserts that the JSONArray provided matches the expected JSONArray.  If it isn't it throws an
-     * {@link AssertionError}.
-     *
-     * @param expected Expected JSONArray
-     * @param actual JSONArray to compare
-     * @param compareMode Specifies which comparison mode to use
-     * @throws JSONException JSON parsing error
-     */
-    public static void assertEquals(JSONArray expected, JSONArray actual, JSONCompareMode compareMode)
-            throws JSONException {
-        assertEquals("", expected, actual, compareMode);
-    }
-    
-    /**
-     * Asserts that the JSONArray provided matches the expected JSONArray.  If it isn't it throws an
-     * {@link AssertionError}.
-     *
-     * @param message Error message to be displayed in case of assertion failure
-     * @param expected Expected JSONArray
-     * @param actual JSONArray to compare
-     * @param compareMode Specifies which comparison mode to use
-     * @throws JSONException JSON parsing error
-     */
-    public static void assertEquals(String message, JSONArray expected, JSONArray actual, JSONCompareMode compareMode)
-        throws JSONException {
-        JSONCompareResult result = JSONCompare.compareJSON(expected, actual, compareMode);
-        if (result.failed()) {
-            throw new AssertionError(getCombinedMessage(message, result.getMessage()));
+    public static <T> Map<T, Integer> getCardinalityMap(final Collection<T> coll) {
+        Map count = new HashMap<T, Integer>();
+        for (T item : coll) {
+            Integer c = (Integer) (count.get(item));
+            if (c == null) {
+                count.put(item, INTEGER_ONE);
+            } else {
+                count.put(item, new Integer(c.intValue() + 1));
+            }
         }
+        return count;
     }
+    
+    public static String getJSON(String url) {
+        HttpsURLConnection con = null;
+        try {
+            URL u = new URL(url);
+            con = (HttpsURLConnection) u.openConnection();
 
-    /**
-     * Asserts that the JSONArray provided does not match the expected JSONArray.  If it is it throws an
-     * {@link AssertionError}.
-     * 
-     * @param expected Expected JSONArray
-     * @param actual JSONArray to compare
-     * @param compareMode Specifies which comparison mode to use
-     * @throws JSONException JSON parsing error
-     */
-    public static void assertNotEquals(JSONArray expected, JSONArray actual, JSONCompareMode compareMode)
-            throws JSONException {
-        assertNotEquals("", expected, actual, compareMode);
-    }
-    
-    /**
-     * Asserts that the JSONArray provided does not match the expected JSONArray.  If it is it throws an
-     * {@link AssertionError}.
-     * 
-     * @param message Error message to be displayed in case of assertion failure
-     * @param expected Expected JSONArray
-     * @param actual JSONArray to compare
-     * @param compareMode Specifies which comparison mode to use
-     * @throws JSONException JSON parsing error
-     */
-    public static void assertNotEquals(String message, JSONArray expected, JSONArray actual, JSONCompareMode compareMode)
-        throws JSONException {
-        JSONCompareResult result = JSONCompare.compareJSON(expected, actual, compareMode);
-        if (result.passed()) {
-            throw new AssertionError(getCombinedMessage(message, result.getMessage()));
+            con.connect();
+
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line + "\n");
+            }
+            br.close();
+            return sb.toString();
+
+
+        } catch (MalformedURLException ex) {
+            ex.printStackTrace();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (con != null) {
+                try {
+                    con.disconnect();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
         }
+        return null;
     }
-    
-    private static String getCombinedMessage(String message1, String message2) {
-        String combinedMessage = "";
-        
-        if(message1 == null || "".equals(message1)) {
-            combinedMessage = message2;
-        } else {
-            combinedMessage = message1 + " " + message2;
-        }
-        return combinedMessage;
-    }
-    
-    public static String readFileAsString(String file)throws Exception
-    {
-        return new String(Files.readAllBytes(Paths.get(file)));
-    }
-    
-    public static void main(String[] args) throws Exception {
-    	String localfile = "localFile.json";
-        String expected = readFileAsString(localfile);
-        System.out.println(expected);
-        
-        String productionFile = "productionFile.json";
-        String actual = readFileAsString(productionFile);
-        System.out.println(actual);
-    	
-    	JSONAssert.assertEquals(expected, actual, new CustomComparator(JSONCompareMode.LENIENT,
-    			   new Customization("age", (ct1, ct2) -> true),
-    			   new Customization("hobbies", (c1, c2) -> true)));
-    	
-    	//JSONAssert.assertEquals(expected, actual, true);
-	}
 }
