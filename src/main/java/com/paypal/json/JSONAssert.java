@@ -257,24 +257,20 @@ public final class JSONCompareUtil {
         return null;
     }
     
-    HttpURLConnection conn = (HttpURLConnection) (new URL("https://www.quora.com")).openConnection(); 
-  
-conn.setRequestProperty("Content-Type", "application/json"); 
-conn.setDoOutput(true); 
-conn.setDoInput(true); 
- 
-conn.setRequestMethod("PUT"); 
-JSONObject data = new JSONObject(); 
-//Now add all the data to this object using accumulate. 
- 
-OutputStreamWriter out = new OutputStreamWriter(conn.getOutputStream()); 
-out.write(data); 
- 
-Bufferedreader reader = new BufferedReader ( new InputStreamReader(conn.getInputStream()); 
-for (String line; (line = reader.readLine()) != null;) { 
-        System.out.println(line); 
-} 
-reader.close(); 
-out.close(); 
+    try { 		
+			
+			StringBuffer output = null;
+			String command = "curl -X POST https://postman-echo.com/post --data foo1=bar1&foo2=bar2";
+			Process p = Runtime.getRuntime().exec(command);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream())); 
+			String line = ""; 
+			while ((line = reader.readLine())!= null)  
+			{ 
+				System.out.println("JSONAssert.main()"+line);
+				output.append(line + "\n");  
+			} 
+	} catch (Exception e) {
+		// TODO: handle exception
+	}
     
 }
