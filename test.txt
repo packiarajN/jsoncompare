@@ -1,0 +1,4 @@
+localFile.json,productionFile.json,false
+localFile.json,productionFile1.json,false
+localFile.json,productionFile2.json,true
+localFile.json,productionFile3.json,true
