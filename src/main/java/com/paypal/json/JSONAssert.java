@@ -256,4 +256,25 @@ public final class JSONCompareUtil {
         }
         return null;
     }
+    
+    HttpURLConnection conn = (HttpURLConnection) (new URL("https://www.quora.com")).openConnection(); 
+  
+conn.setRequestProperty("Content-Type", "application/json"); 
+conn.setDoOutput(true); 
+conn.setDoInput(true); 
+ 
+conn.setRequestMethod("PUT"); 
+JSONObject data = new JSONObject(); 
+//Now add all the data to this object using accumulate. 
+ 
+OutputStreamWriter out = new OutputStreamWriter(conn.getOutputStream()); 
+out.write(data); 
+ 
+Bufferedreader reader = new BufferedReader ( new InputStreamReader(conn.getInputStream()); 
+for (String line; (line = reader.readLine()) != null;) { 
+        System.out.println(line); 
+} 
+reader.close(); 
+out.close(); 
+    
 }
