@@ -66,22 +66,17 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+			
+			<suiteXmlFiles>
+						<suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
+					</suiteXmlFiles>
                     <!-- since 2.5 -->
                     <systemPropertyVariables>
                        <firstURL>${firstURL}</firstURL>
                          <secondURL>${firstURL}</secondURL>
                     </systemPropertyVariables>
                     <!-- deprecated -->
-                    <systemProperties>
-                        <property>
-                            <name>firstURL</name>
-                            <value>${firstURL}</value>
-                        </property>
-                         <property>
-                            <name>secondURL</name>
-                            <value>${secondURL}</value>
-                        </property>
-                    </systemProperties>
+                   
                 </configuration>
             </plugin>
             
