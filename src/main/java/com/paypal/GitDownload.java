@@ -31,6 +31,13 @@ public class GitDownload {
       .setURI(sshGitURI).call();
     System.out.println("Project cloned through SSH in: " + workingDir.getPath());
     
+    File file = new File(workingDir.getPath()+"\\test.txt");
+    
+    BufferedReader br = new BufferedReader(new FileReader(file));
+    
+    String st;
+    while ((st = br.readLine()) != null)
+      System.out.println(st);
     
   }
   private static class SshTransportConfigCallback implements TransportConfigCallback {
