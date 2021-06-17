@@ -1,4 +1,116 @@
-localFile.json,productionFile.json,false
-localFile.json,productionFile1.json,false
-localFile.json,productionFile2.json,true
-localFile.json,productionFile3.json,true
+%paypal_compliance_etl_grid
+%riskadminservserv
+	bind_port=8443
+	application_ssl_port=8443
+	admin_port=8083
+	application_non_ssl_port=8080
+	container_shutdown_port=8005
+	jmx_remote_port=8445
+	remote_logon_port=8444
+	wrapper_nanny_port=32000
+	cal_host=cal-stage-msgeo.qa.paypal.com
+	cal_host_port=1118
+	remoteconfigserv_host=${ip}
+	remoteconfigserv_port=15080
+	sherlock_frontier_host=sherlock-ftrproxy-msgeo.qa.paypal.com
+%customerstoryserv
+	bind_port=21379
+	application_ssl_port=21379
+	admin_port=21373
+	application_non_ssl_port=21374
+	container_shutdown_port=21375
+	jmx_remote_port=21376
+	remote_logon_port=21377
+	wrapper_nanny_port=21378
+	cal_host=cal-stage-msgeo.qa.paypal.com
+	cal_host_port=1118
+	contactbookmgmtserv_host=${ip}
+	contactbookmgmtserv_port=18817
+	custmsgplatformserv_host=${ip}
+	custmsgplatformserv_port=21593
+	junoserv-gen_host=${ip}
+	junoserv-gen_port=26945
+	keymakerapi_host=keymakerapi-msgeo.qa.paypal.com
+	keymakerapi_port=443
+	marketingofferreadserv_host=${ip}
+	marketingofferreadserv_port=11062
+	gid1_occ_host=1:${ip}:15113
+	gid2_occ_host=1:${ip}:15114
+	gid_occ_host=1:${ip}:15113^1:${ip}:15114
+	remoteconfigserv_host=${ip}
+	remoteconfigserv_port=15080
+	sherlock_frontier_host=sherlock-ftrproxy-msgeo.qa.paypal.com
+	trackingeventrestserv_host=${ip}
+	trackingeventrestserv_port=12436
+%yamlammsd
+	bind_port=8443
+	application_ssl_port=8443
+	admin_port=8083
+	application_non_ssl_port=8080
+	container_shutdown_port=8005
+	jmx_remote_port=8445
+	remote_logon_port=8444
+	wrapper_nanny_port=32000
+	appmetaconfigserv_host=msmaster.qa.paypal.com
+	appmetaconfigserv_port=11746
+	cal_host=cal-stage-msgeo.qa.paypal.com
+	cal_host_port=1118
+	remoteconfigserv_host=${ip}
+	remoteconfigserv_port=15080
+	sherlock_frontier_host=sherlock-ftrproxy-msgeo.qa.paypal.com
+%noomsprint17nodeweb
+	cal_host=cal-stage-msgeo.qa.paypal.com
+	cal_host_port=1118
+	mayfly-session_host=${ip}
+	mayfly-session_port=10368
+	mayfly-session_service=1:${ip}:10368
+	trackingeventrestserv_host=${ip}
+	trackingeventrestserv_port=12436
+%facialtestnodeweb
+	cal_host=cal-stage-msgeo.qa.paypal.com
+	cal_host_port=1118
+	mayfly-session_host=${ip}
+	mayfly-session_port=10368
+	mayfly-session_service=1:${ip}:10368
+	trackingeventrestserv_host=${ip}
+	trackingeventrestserv_port=12436
+%testscanningserv
+	bind_port=8443
+	application_ssl_port=8443
+	admin_port=8083
+	application_non_ssl_port=8080
+	container_shutdown_port=8005
+	jmx_remote_port=8445
+	remote_logon_port=8444
+	wrapper_nanny_port=32000
+	appmetaconfigserv_host=msmaster.qa.paypal.com
+	appmetaconfigserv_port=11746
+	cal_host=cal-stage-msgeo.qa.paypal.com
+	cal_host_port=1118
+	remoteconfigserv_host=${ip}
+	remoteconfigserv_port=15080
+	sherlock_frontier_host=sherlock-ftrproxy-msgeo.qa.paypal.com
+%nodetestapp1
+	cal_host=cal-stage-msgeo.qa.paypal.com
+	cal_host_port=1118
+	mayfly-session_host=${ip}
+	mayfly-session_port=10368
+	mayfly-session_service=1:${ip}:10368
+	trackingeventrestserv_host=${ip}
+	trackingeventrestserv_port=12436
+%raptor1trainingserv
+	bind_port=8443
+	application_ssl_port=8443
+	admin_port=8083
+	application_non_ssl_port=8080
+	container_shutdown_port=8005
+	jmx_remote_port=8445
+	remote_logon_port=8444
+	wrapper_nanny_port=32000
+	appmetaconfigserv_host=msmaster.qa.paypal.com
+	appmetaconfigserv_port=11746
+	cal_host=cal-stage-msgeo.qa.paypal.com
+	cal_host_port=1118
+	remoteconfigserv_host=${ip}
+	remoteconfigserv_port=15080
+	sherlock_frontier_host=sherlock-ftrproxy-msgeo.qa.paypal.com
